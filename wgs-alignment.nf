@@ -9,7 +9,7 @@
 
 params.folder = "./"
 params.format = "paired"
-params.hg38RefPath = "/gpfs/data/davolilab/reference-genomes/ucsc-hg38/hg38.order/genome.fa"
+params.refPath = "/gpfs/data/davolilab/reference-genomes/ucsc-hg38/hg38.order/genome.fa"
 
 process TRIMFASTQ {
 	
@@ -99,7 +99,7 @@ process BWA_MEM_ALIGN {
 
 	prefix=$(basename !{read_list} | cut -d'_' -f1)
 	
-	bwa mem -t 40 !{params.hg38RefPath} !{read_list[0]} !{read_list[1]} > aligned.sam
+	bwa mem -t 40 !{params.refPath} !{read_list[0]} !{read_list[1]} > aligned.sam
 	samtools view -S aligned.sam -b | samtools sort -o sorted.bam
 	samtools rmdup sorted.bam "${prefix}.sorted.rmdup.bam"
 	
