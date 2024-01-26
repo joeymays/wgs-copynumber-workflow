@@ -6,14 +6,13 @@
 #SBATCH --time=12:00:00
 #SBATCH --output=log_copywriter_%j.log
 #SBATCH --mail-type=ALL
+#SBATCH --mail-user=example@gmail.com
+#SBATCH --job-name=example_name
 
 ## SET EMAIL ADDRESS & RUN ID
-
-#SBATCH --mail-user=<youremailaddress>
-#SBATCH --job-name=<short run identifier>
 
 ##  move this file to WGS folder and run with `sbatch` command
 
 module load nextflow
 
-nextflow run /gpfs/data/davolilab/data/WGS/01-scripts/wgs-copynumber-workflow/wgs-copynumber.nf -with-report nextflow-copywriter-report-%j.html
+nextflow run /gpfs/data/davolilab/data/WGS/01-scripts/wgs-copynumber-workflow/wgs-copynumber.nf -with-report nextflow-copywriter-report-$(date +"%Y%m%d").html
