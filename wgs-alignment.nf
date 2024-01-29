@@ -30,19 +30,34 @@ process TRIMFASTQ {
 	path "${sample_prefix}_trim.log"
 
 	shell:
-	'''
-	module add trimmomatic/0.36
+	if( params.format == "single" )
+		'''
+		module add trimmomatic/0.36
 
-	java -Xms8G -Xmx8G -jar "${TRIMMOMATIC_ROOT}/trimmomatic-0.36.jar" \
-	PE \
-	-threads 40 \
-	!{reads[0]} !{reads[1]} \
-	"!{sample_prefix}_R1_001.trim.fastq.gz" "!{sample_prefix}_R1.unpaired.fastq.gz" \
-	"!{sample_prefix}_R2_001.trim.fastq.gz" "!{sample_prefix}_R2.unpaired.fastq.gz" \
-	ILLUMINACLIP:/gpfs/data/davolilab/reference-genomes/contaminants/trimmomatic.fa:2:30:10:1:true \
-	TRAILING:5 SLIDINGWINDOW:4:15 MINLEN:35 \
-	2> "!{sample_prefix}_trim.log" 
-	'''
+		java -Xms8G -Xmx8G -jar "${TRIMMOMATIC_ROOT}/trimmomatic-0.36.jar" \
+		SE \
+		-threads 40 \
+		!{reads[0]} \
+		"!{sample_prefix}_R1_001.trim.fastq.gz" \
+		ILLUMINACLIP:/gpfs/data/davolilab/reference-genomes/contaminants/trimmomatic.fa:2:30:10:1:true \
+		TRAILING:5 SLIDINGWINDOW:4:15 MINLEN:35 \
+		2> "!{sample_prefix}_trim.log" 
+		'''
+	
+	else 
+		'''
+                module add trimmomatic/0.36
+
+                java -Xms8G -Xmx8G -jar "${TRIMMOMATIC_ROOT}/trimmomatic-0.36.jar" \
+                PE \
+                -threads 40 \
+                !{reads[0]} !{reads[1]} \
+                "!{sample_prefix}_R1_001.trim.fastq.gz" "!{sample_prefix}_R1.unpaired.fastq.gz" \
+                "!{sample_prefix}_R2_001.trim.fastq.gz" "!{sample_prefix}_R2.unpaired.fastq.gz" \
+                ILLUMINACLIP:/gpfs/data/davolilab/reference-genomes/contaminants/trimmomatic.fa:2:30:10:1:true \
+                TRAILING:5 SLIDINGWINDOW:4:15 MINLEN:35 \
+                2> "!{sample_prefix}_trim.log"
+                '''
 }
 
 process FASTQC {
@@ -93,17 +108,30 @@ process BWA_MEM_ALIGN {
 	path "*.sorted.rmdup.bam"
 
 	shell:
-	'''
-	module add bwa/0.7.17
-	module add samtools/1.9-new
+	if( params.format == "single" )
+		'''
+		module add bwa/0.7.17
+		module add samtools/1.9-new
 
-	prefix=$(basename !{read_list} | cut -d'_' -f1)
+		prefix=$(basename !{read_list} | cut -d'_' -f1)
 	
-	bwa mem -t 40 !{params.refPath} !{read_list[0]} !{read_list[1]} > aligned.sam
-	samtools view -S aligned.sam -b | samtools sort -o sorted.bam
-	samtools rmdup sorted.bam "${prefix}.sorted.rmdup.bam"
+		bwa mem -t 40 !{params.refPath} !{read_list} > aligned.sam
+        	samtools view -S aligned.sam -b | samtools sort -o sorted.bam
+        	samtools rmdup sorted.bam "${prefix}.sorted.rmdup.bam"
+		'''
+
+	else
+		'''
+		module add bwa/0.7.17
+                module add samtools/1.9-new
+
+                prefix=$(basename !{read_list} | cut -d'_' -f1)	
+		
+		bwa mem -t 40 !{params.refPath} !{read_list[0]} !{read_list[1]} > aligned.sam
+		samtools view -S aligned.sam -b | samtools sort -o sorted.bam
+		samtools rmdup sorted.bam "${prefix}.sorted.rmdup.bam"
 	
-	'''
+		'''
 
 	stub:
 	'''
@@ -130,7 +158,13 @@ process MULTIQC {
 }		
 
 workflow {
-	ch_fastq = Channel.fromFilePairs("${params.folder}/fastq/*/*_{R1,R2}_*.fastq.gz", checkIfExists: true, size: 2) 
+	if( params.format == "single" ) {
+		ch_fastq = Channel.fromFilePairs("${params.folder}/fastq/*/*.fastq.gz", checkIfExists: true, size: 1)
+	}	
+	else {
+		ch_fastq = Channel.fromFilePairs("${params.folder}/fastq/*/*_{R1,R2}_*.fastq.gz", checkIfExists: true, size: 2)
+	}	
+	
 	(ch_trimmed, ch_trimmed_filenames, ch_trim_logs) = TRIMFASTQ(ch_fastq)
 	(ch_fast_qc_html, ch_fast_qc_zip) = ch_trimmed_filenames.flatten() | FASTQC
 	ch_alignment = BWA_MEM_ALIGN(ch_trimmed)
