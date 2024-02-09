@@ -32,7 +32,7 @@ process TRIMFASTQ {
 	shell:
 	if( params.format == "single" )
 		'''
-		module add trimmomatic/0.36
+		module load trimmomatic/0.36
 
 		java -Xms8G -Xmx8G -jar "${TRIMMOMATIC_ROOT}/trimmomatic-0.36.jar" \
 		SE \
@@ -46,7 +46,7 @@ process TRIMFASTQ {
 	
 	else 
 		'''
-                module add trimmomatic/0.36
+                module load trimmomatic/0.36
 
                 java -Xms8G -Xmx8G -jar "${TRIMMOMATIC_ROOT}/trimmomatic-0.36.jar" \
                 PE \
@@ -110,8 +110,8 @@ process BWA_MEM_ALIGN {
 	shell:
 	if( params.format == "single" )
 		'''
-		module add bwa/0.7.17
-		module add samtools/1.9-new
+		module load bwa/0.7.17
+		module load samtools/1.9-new
 
 		prefix=$(basename !{read_list} | cut -d'_' -f1)
 	
@@ -122,8 +122,8 @@ process BWA_MEM_ALIGN {
 
 	else
 		'''
-		module add bwa/0.7.17
-                module add samtools/1.9-new
+		module load bwa/0.7.17
+                module load samtools/1.9-new
 
                 prefix=$(basename !{read_list} | cut -d'_' -f1)	
 		

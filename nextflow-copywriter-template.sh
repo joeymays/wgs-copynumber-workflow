@@ -9,10 +9,10 @@
 #SBATCH --mail-user=example@gmail.com
 #SBATCH --job-name=example_name
 
-## SET EMAIL ADDRESS & RUN ID
+## SET EMAIL ADDRESS & JOB NAME ABOVE
 
 ##  move this file to WGS folder and run with `sbatch` command
 
 module load nextflow
 
-nextflow run /gpfs/data/davolilab/data/WGS/01-scripts/wgs-copynumber-workflow/wgs-copynumber.nf -with-report nextflow-copywriter-report-$(date +"%Y%m%d").html
+nextflow run /gpfs/data/davolilab/data/WGS/01-scripts/wgs-copynumber-workflow/wgs-copynumber.nf -with-report nextflow-copywriter-report-$(date +"%Y%m%d").html -resume
