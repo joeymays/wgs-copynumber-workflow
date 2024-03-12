@@ -14,4 +14,4 @@
 
 module load nextflow
 
-nextflow run /gpfs/data/davolilab/data/WGS/01-scripts/wgs-copynumber-workflow/wgs-alignment.nf -with-report nextflow-alignment-report-$(date +"%Y%m%d").html -resume
+nextflow run /gpfs/data/davolilab/data/WGS/01-scripts/wgs-copynumber-workflow/wgs-alignment.nf -with-report report-nextflow-alignment-$(date +"%Y%m%d%H%m").html -resume
